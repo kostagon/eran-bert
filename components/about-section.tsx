@@ -1,37 +1,75 @@
 "use client"
 
 import { useLanguage } from "@/lib/language-context"
-import { useScrollReveal } from "@/hooks/use-scroll-reveal"
+import { useScrollReveal, useScrollProgress } from "@/hooks/use-scroll-reveal"
+import { useEffect, useRef, useState } from "react"
 
 export function AboutSection() {
   const { t } = useLanguage()
-  const { ref, isVisible } = useScrollReveal(0.15)
-  const { ref: quoteRef, isVisible: quoteVisible } = useScrollReveal(0.2)
+  const { ref: sectionRef, isVisible } = useScrollReveal(0.08)
+  const { ref: parallaxRef, progress } = useScrollProgress()
+  const { ref: quoteRef, isVisible: quoteVisible } = useScrollReveal(0.15)
+  const lineRef = useRef<HTMLDivElement>(null)
+  const [lineDrawn, setLineDrawn] = useState(false)
+
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => setLineDrawn(true), 600)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible])
+
+  const yShift = (progress - 0.5) * -40
 
   return (
     <section
       id="about"
-      className="py-24 md:py-40 lg:py-56 px-6 md:px-12 lg:px-20"
-      style={{ background: "hsl(30 10% 6%)" }}
+      ref={parallaxRef}
+      className="relative py-32 md:py-48 lg:py-64 px-6 md:px-12 lg:px-20 xl:px-28 overflow-hidden"
+      style={{ background: "hsl(var(--ink))" }}
     >
-      <div className="max-w-5xl mx-auto">
-        {/* Section label */}
-        <div
-          ref={ref}
-          className={`transition-all duration-[1500ms] ease-out ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
-          <span
-            className="font-sans text-[10px] tracking-[0.3em] uppercase block mb-12 md:mb-16"
-            style={{ color: "hsl(40 15% 92% / 0.35)" }}
-          >
-            {t("About", "\u05D0\u05D5\u05D3\u05D5\u05EA")}
-          </span>
+      {/* Large watermark kanji */}
+      <span
+        className="absolute font-sans pointer-events-none select-none"
+        style={{
+          insetInlineEnd: "-5%",
+          top: "10%",
+          fontSize: "clamp(18rem, 40vw, 45rem)",
+          color: "hsl(var(--stone) / 0.015)",
+          lineHeight: 0.8,
+          transform: `translateY(${yShift * 1.5}px)`,
+          transition: "transform 0.1s linear",
+        }}
+        aria-hidden="true"
+      >
+        {"\u9053"}
+      </span>
 
+      <div className="max-w-5xl mx-auto relative z-10" ref={sectionRef}>
+        {/* Label */}
+        <span
+          className="slide-inline font-sans text-[10px] tracking-[0.4em] uppercase block mb-16 md:mb-20"
+          style={{
+            color: "hsl(var(--stone) / 0.25)",
+            transitionDelay: "0s",
+          }}
+          ref={(el) => {
+            if (el && isVisible) el.classList.add("visible")
+          }}
+        >
+          {t("About", "\u05D0\u05D5\u05D3\u05D5\u05EA")}
+        </span>
+
+        {/* Main bio text - large, serene, with staggered word reveal */}
+        <div className="overflow-hidden">
           <p
-            className="font-serif text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light leading-[1.3] md:leading-[1.4] tracking-[-0.01em]"
-            style={{ color: "hsl(40 15% 92%)" }}
+            className="font-serif text-[clamp(1.5rem,4vw,3.5rem)] font-light leading-[1.35] tracking-[-0.015em]"
+            style={{
+              color: "hsl(var(--stone))",
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateY(0)" : "translateY(40px)",
+              transition: "opacity 2s cubic-bezier(0.16,1,0.3,1) 0.3s, transform 2s cubic-bezier(0.16,1,0.3,1) 0.3s",
+            }}
           >
             {t(
               "A martial arts teacher specializing in the integration of somatic learning processes, a meditation and conscious movement guide, and a facilitator of resilience and self-regulation skills.",
@@ -40,32 +78,52 @@ export function AboutSection() {
           </p>
         </div>
 
-        {/* Divider */}
+        {/* Ink line divider, drawn from inline-start */}
         <div
-          className="my-16 md:my-24 h-px w-full"
-          style={{ background: "hsl(40 15% 92% / 0.08)" }}
+          ref={lineRef}
+          className="my-20 md:my-28 h-px w-full"
+          style={{
+            background: "hsl(var(--stone) / 0.06)",
+            transformOrigin: "var(--line-origin, 0% 50%)",
+            transform: lineDrawn ? "scaleX(1)" : "scaleX(0)",
+            transition: "transform 2s cubic-bezier(0.16,1,0.3,1)",
+          }}
         />
 
         {/* Philosophy quote */}
         <div
           ref={quoteRef}
-          className={`flex flex-col md:flex-row gap-8 md:gap-16 transition-all duration-[1500ms] ease-out ${
-            quoteVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
+          className="flex flex-col md:flex-row gap-10 md:gap-20"
         >
-          <div className="shrink-0">
+          {/* Large kanji accent */}
+          <div
+            className="shrink-0"
+            style={{
+              opacity: quoteVisible ? 1 : 0,
+              transform: quoteVisible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.85)",
+              filter: quoteVisible ? "blur(0)" : "blur(6px)",
+              transition: "all 2s cubic-bezier(0.16,1,0.3,1)",
+            }}
+          >
             <span
-              className="font-sans text-6xl md:text-8xl font-extralight jp-char"
-              style={{ color: "hsl(18 60% 42% / 0.4)" }}
+              className="font-sans text-7xl md:text-9xl font-extralight jp-char"
+              style={{ color: "hsl(var(--warm-accent) / 0.25)" }}
               aria-hidden="true"
             >
               {"\u9053"}
             </span>
           </div>
-          <div>
+
+          <div
+            style={{
+              opacity: quoteVisible ? 1 : 0,
+              transform: quoteVisible ? "translateY(0)" : "translateY(30px)",
+              transition: "all 1.8s cubic-bezier(0.16,1,0.3,1) 0.3s",
+            }}
+          >
             <p
-              className="font-sans text-sm md:text-base font-light leading-relaxed"
-              style={{ color: "hsl(40 15% 92% / 0.6)" }}
+              className="font-sans text-sm md:text-base font-extralight leading-[1.8] md:leading-[2]"
+              style={{ color: "hsl(var(--stone) / 0.5)" }}
             >
               {t(
                 "The path is not about arriving. It is about the quality of each step, the depth of each breath, the integrity of each moment. True mastery is found in the space between effort and surrender.",
@@ -73,8 +131,8 @@ export function AboutSection() {
               )}
             </p>
             <p
-              className="font-sans text-xs tracking-[0.2em] uppercase mt-6"
-              style={{ color: "hsl(40 15% 92% / 0.3)" }}
+              className="font-sans text-[10px] tracking-[0.3em] uppercase mt-8"
+              style={{ color: "hsl(var(--stone) / 0.2)" }}
             >
               {t("The Way", "\u05D4\u05D3\u05E8\u05DA")}
             </p>

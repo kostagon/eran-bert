@@ -1,6 +1,7 @@
 "use client"
 
-import { useScrollReveal } from "@/hooks/use-scroll-reveal"
+import { useScrollReveal, useScrollProgress } from "@/hooks/use-scroll-reveal"
+import { useRef, useEffect, useState } from "react"
 
 interface JapaneseBreakProps {
   characters: string
@@ -9,37 +10,101 @@ interface JapaneseBreakProps {
 }
 
 export function JapaneseBreak({ characters, dark = false, subtitle }: JapaneseBreakProps) {
-  const { ref, isVisible } = useScrollReveal(0.3)
+  const { ref, isVisible } = useScrollReveal(0.15)
+  const { ref: parallaxRef, progress } = useScrollProgress()
+  const [charStates, setCharStates] = useState<boolean[]>([])
 
-  const bgColor = dark ? "hsl(30 10% 6%)" : "hsl(40 20% 97%)"
-  const textColor = dark ? "hsl(40 15% 92%)" : "hsl(30 10% 8%)"
-  const mutedColor = dark ? "hsl(40 15% 92% / 0.25)" : "hsl(30 10% 8% / 0.2)"
+  const chars = characters.split(" ").filter(Boolean)
+
+  // Stagger character reveals
+  useEffect(() => {
+    if (!isVisible) return
+    const timers: ReturnType<typeof setTimeout>[] = []
+    chars.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          setCharStates((prev) => {
+            const next = [...prev]
+            next[i] = true
+            return next
+          })
+        }, 200 + i * 250)
+      )
+    })
+    return () => timers.forEach(clearTimeout)
+  }, [isVisible, chars.length])
+
+  const bgColor = dark ? "hsl(var(--ink))" : "hsl(var(--background))"
+  const textColor = dark ? "hsl(var(--stone))" : "hsl(var(--foreground))"
+  const subtitleColor = dark ? "hsl(var(--stone) / 0.18)" : "hsl(var(--foreground) / 0.15)"
+
+  // Parallax: subtle vertical drift
+  const yOffset = (progress - 0.5) * -30
 
   return (
     <section
-      ref={ref}
-      className="py-24 md:py-40 lg:py-56 flex flex-col items-center justify-center"
+      ref={parallaxRef}
+      className="relative py-32 md:py-48 lg:py-64 flex flex-col items-center justify-center overflow-hidden"
       style={{ background: bgColor }}
       aria-hidden="true"
     >
-      <p
-        className={`font-sans text-3xl md:text-5xl lg:text-7xl font-extralight tracking-[0.4em] md:tracking-[0.6em] jp-char transition-all duration-[2000ms] ease-out ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-        }`}
-        style={{ color: textColor }}
-      >
-        {characters}
-      </p>
-      {subtitle && (
-        <p
-          className={`font-sans text-xs md:text-sm tracking-[0.3em] mt-6 md:mt-10 font-light transition-all duration-[2000ms] ease-out ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-          style={{ color: mutedColor, transitionDelay: "400ms" }}
+      {/* Very faint large kanji watermark behind */}
+      {chars[0] && (
+        <span
+          className="absolute font-sans pointer-events-none select-none"
+          style={{
+            fontSize: "clamp(20rem, 50vw, 50rem)",
+            color: dark ? "hsl(var(--stone) / 0.015)" : "hsl(var(--foreground) / 0.015)",
+            lineHeight: 1,
+            transform: `translateY(${yOffset * 2}px)`,
+            transition: "transform 0.1s linear",
+          }}
         >
-          {subtitle}
-        </p>
+          {chars[0]}
+        </span>
       )}
+
+      <div
+        ref={ref}
+        className="relative z-10 flex flex-col items-center"
+        style={{
+          transform: `translateY(${yOffset}px)`,
+          transition: "transform 0.1s linear",
+        }}
+      >
+        {/* Characters with staggered reveal */}
+        <div className="flex items-center gap-3 md:gap-6 lg:gap-10">
+          {chars.map((char, i) => (
+            <span
+              key={`${char}-${i}`}
+              className="font-sans text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-extralight jp-char"
+              style={{
+                color: textColor,
+                opacity: charStates[i] ? 1 : 0,
+                transform: charStates[i] ? "translateY(0) scale(1)" : "translateY(30px) scale(0.9)",
+                filter: charStates[i] ? "blur(0)" : "blur(4px)",
+                transition: `opacity 1.4s cubic-bezier(0.16,1,0.3,1), transform 1.4s cubic-bezier(0.16,1,0.3,1), filter 1.4s cubic-bezier(0.16,1,0.3,1)`,
+              }}
+            >
+              {char}
+            </span>
+          ))}
+        </div>
+
+        {/* Subtitle */}
+        {subtitle && (
+          <p
+            className="font-sans text-[10px] md:text-xs tracking-[0.4em] md:tracking-[0.5em] mt-10 md:mt-16 font-light uppercase"
+            style={{
+              color: subtitleColor,
+              opacity: isVisible ? 1 : 0,
+              transition: "opacity 2s cubic-bezier(0.16,1,0.3,1) 0.8s",
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
+      </div>
     </section>
   )
 }

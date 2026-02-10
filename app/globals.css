@@ -10,7 +10,6 @@
 
 @layer base {
   :root {
-    /* Ink & Stone palette */
     --background: 40 20% 97%;
     --foreground: 30 10% 8%;
     --card: 40 15% 94%;
@@ -32,11 +31,16 @@
     --ring: 30 10% 8%;
     --radius: 0.25rem;
 
-    /* Dark section tokens */
-    --dark-bg: 30 10% 6%;
-    --dark-fg: 40 15% 92%;
-    --dark-muted: 30 5% 35%;
+    --ink: 30 10% 6%;
+    --stone: 40 15% 92%;
+    --warm-accent: 18 60% 42%;
+    --line-origin: 0% 50%;
   }
+}
+
+/* Flip line origins and slide direction for RTL */
+[dir="rtl"] {
+  --line-origin: 100% 50%;
 }
 
 @layer base {
@@ -48,52 +52,147 @@
   }
 }
 
-/* Smooth scrolling */
+/* ── Smooth scroll ── */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-/* Selection color */
+/* ── Selection ── */
 ::selection {
-  background-color: hsl(18 60% 42% / 0.2);
+  background-color: hsl(18 60% 42% / 0.15);
   color: hsl(30 10% 8%);
 }
 
-/* Custom cursor hide on mobile */
+/* ── Hide cursor follower on touch ── */
 @media (max-width: 768px) {
-  .cursor-follower {
-    display: none !important;
-  }
+  .cursor-follower { display: none !important; }
 }
 
-/* Japanese character styling */
+/* ── Japanese features ── */
 .jp-char {
   font-feature-settings: "palt";
-  letter-spacing: 0.3em;
 }
 
-/* Fade-in animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── Parallax depth layers ── */
+.parallax-slow {
+  will-change: transform;
+  transition: transform 0.1s linear;
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 1s ease-out forwards;
+/* ── Horizontal rule breathe ── */
+.rule-breathe {
+  animation: ruleBreathe 6s ease-in-out infinite;
+}
+@keyframes ruleBreathe {
+  0%, 100% { transform: scaleX(0.3); opacity: 0.15; }
+  50% { transform: scaleX(1); opacity: 0.35; }
 }
 
-/* Stagger delays */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
-.delay-800 { animation-delay: 800ms; }
+/* ── Character reveal ── */
+.char-reveal {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.char-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Section clip transition ── */
+.section-wipe {
+  clip-path: inset(8% 0 8% 0);
+  transition: clip-path 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section-wipe.revealed {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ── Ink line draw ── */
+.ink-line {
+  transform-origin: var(--line-origin, 0% 50%);
+  transform: scaleX(0);
+  transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[dir="rtl"] .ink-line {
+  --line-origin: 100% 50%;
+}
+.ink-line.drawn {
+  transform: scaleX(1);
+}
+
+/* ── Slide from inline-start ── */
+.slide-inline {
+  opacity: 0;
+  transform: translateX(calc(-60px * var(--dir-mult, 1)));
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[dir="rtl"] .slide-inline {
+  --dir-mult: -1;
+}
+.slide-inline.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Rise ── */
+.rise {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rise.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Scale reveal ── */
+.scale-reveal {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scale-reveal.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Vertical line grow ── */
+.vline-grow {
+  transform-origin: top center;
+  transform: scaleY(0);
+  transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vline-grow.visible {
+  transform: scaleY(1);
+}
+
+/* ── Blur fade ── */
+.blur-fade {
+  opacity: 0;
+  filter: blur(8px);
+  transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.blur-fade.visible {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* ── Mask reveal from inline-start ── */
+.mask-reveal {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[dir="rtl"] .mask-reveal {
+  clip-path: inset(0 0 0 100%);
+}
+.mask-reveal.visible {
+  clip-path: inset(0 0 0 0);
+}
