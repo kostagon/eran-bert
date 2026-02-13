@@ -35,7 +35,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="fixed top-0 inset-inline-start-0 inset-inline-end-0 z-50"
+      className="fixed w-screen top-0 inset-inline-start-0 inset-inline-end-100 z-50"
       style={{
         backdropFilter: scrolled ? "blur(12px)" : "none",
         background: scrolled ? "hsl(var(--ink) / 0.5)" : "transparent",
