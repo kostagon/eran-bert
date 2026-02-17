@@ -10,37 +10,64 @@
 
 @layer base {
   :root {
-    --background: 40 20% 97%;
-    --foreground: 30 10% 8%;
-    --card: 40 15% 94%;
-    --card-foreground: 30 10% 8%;
-    --popover: 40 20% 97%;
-    --popover-foreground: 30 10% 8%;
-    --primary: 30 10% 8%;
-    --primary-foreground: 40 20% 97%;
-    --secondary: 35 10% 90%;
-    --secondary-foreground: 30 10% 15%;
-    --muted: 35 8% 88%;
-    --muted-foreground: 30 5% 45%;
-    --accent: 18 60% 42%;
-    --accent-foreground: 40 20% 97%;
+    /* ── Organic nature palette ── */
+    /* Paper: warm, slightly yellowed like aged washi */
+    --background: 42 30% 95%;
+    --foreground: 150 18% 14%;
+
+    /* Card: slightly darker parchment */
+    --card: 42 25% 91%;
+    --card-foreground: 150 18% 14%;
+
+    --popover: 42 30% 95%;
+    --popover-foreground: 150 18% 14%;
+
+    /* Primary: deep moss */
+    --primary: 150 18% 14%;
+    --primary-foreground: 42 30% 95%;
+
+    /* Secondary: sage mist */
+    --secondary: 140 12% 87%;
+    --secondary-foreground: 150 18% 20%;
+
+    /* Muted: dusty sage */
+    --muted: 145 10% 82%;
+    --muted-foreground: 150 8% 42%;
+
+    /* Accent: warm clay/terracotta */
+    --accent: 16 45% 52%;
+    --accent-foreground: 42 30% 95%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 35 10% 85%;
-    --input: 35 10% 85%;
-    --ring: 30 10% 8%;
+
+    --border: 140 10% 84%;
+    --input: 140 10% 84%;
+    --ring: 150 18% 14%;
     --radius: 0.25rem;
 
-    --ink: 30 10% 6%;
-    --stone: 40 15% 92%;
-    --warm-accent: 18 60% 42%;
+    /* ── Atmosphere custom tokens ── */
+    --moss: 150 18% 14%;
+    --moss-soft: 148 15% 22%;
+    --sage: 145 14% 68%;
+    --teal: 178 25% 40%;
+    --clay: 16 45% 52%;
+    --clay-muted: 16 35% 60%;
+    --paper: 42 30% 95%;
+    --paper-dark: 42 22% 88%;
+    --canopy: 152 22% 10%;
+    --canopy-light: 150 16% 18%;
+
+    /* Direction-aware origins */
     --line-origin: 0% 50%;
+    --slide-dir: 1;
   }
 }
 
-/* Flip line origins and slide direction for RTL */
+/* Flip for RTL */
 [dir="rtl"] {
   --line-origin: 100% 50%;
+  --slide-dir: -1;
 }
 
 @layer base {
@@ -60,8 +87,8 @@ html {
 
 /* ── Selection ── */
 ::selection {
-  background-color: hsl(18 60% 42% / 0.15);
-  color: hsl(30 10% 8%);
+  background-color: hsl(var(--clay) / 0.15);
+  color: hsl(var(--moss));
 }
 
 /* ── Hide cursor follower on touch ── */
@@ -74,19 +101,44 @@ html {
   font-feature-settings: "palt";
 }
 
-/* ── Parallax depth layers ── */
-.parallax-slow {
-  will-change: transform;
-  transition: transform 0.1s linear;
+/* ── Breathing animation (slow inhale/exhale rhythm) ── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+.breathe {
+  animation: breathe 8s ease-in-out infinite;
+}
+.breathe-slow {
+  animation: breathe 12s ease-in-out infinite;
+}
+
+/* ── Breathing SVG pulse ── */
+@keyframes svgBreathe {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.12; }
+  50% { transform: scale(1.04) rotate(0.5deg); opacity: 0.2; }
+}
+.svg-breathe {
+  animation: svgBreathe 10s ease-in-out infinite;
+}
+
+/* ── Slow float ── */
+@keyframes slowFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(0.5deg); }
+  66% { transform: translateY(4px) rotate(-0.3deg); }
+}
+.slow-float {
+  animation: slowFloat 16s ease-in-out infinite;
 }
 
 /* ── Horizontal rule breathe ── */
-.rule-breathe {
-  animation: ruleBreathe 6s ease-in-out infinite;
-}
 @keyframes ruleBreathe {
   0%, 100% { transform: scaleX(0.3); opacity: 0.15; }
   50% { transform: scaleX(1); opacity: 0.35; }
+}
+.rule-breathe {
+  animation: ruleBreathe 8s ease-in-out infinite;
 }
 
 /* ── Character reveal ── */
@@ -102,37 +154,31 @@ html {
   transform: translateY(0);
 }
 
-/* ── Section clip transition ── */
+/* ── Section wipe ── */
 .section-wipe {
   clip-path: inset(8% 0 8% 0);
-  transition: clip-path 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: clip-path 1.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .section-wipe.revealed {
   clip-path: inset(0 0 0 0);
 }
 
-/* ── Ink line draw ── */
+/* ── Ink line draw (direction-aware) ── */
 .ink-line {
   transform-origin: var(--line-origin, 0% 50%);
   transform: scaleX(0);
   transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-[dir="rtl"] .ink-line {
-  --line-origin: 100% 50%;
-}
 .ink-line.drawn {
   transform: scaleX(1);
 }
 
-/* ── Slide from inline-start ── */
+/* ── Slide from inline-start (direction-aware) ── */
 .slide-inline {
   opacity: 0;
-  transform: translateX(calc(-60px * var(--dir-mult, 1)));
+  transform: translateX(calc(-60px * var(--slide-dir, 1)));
   transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1),
               transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-[dir="rtl"] .slide-inline {
-  --dir-mult: -1;
 }
 .slide-inline.visible {
   opacity: 1;
@@ -149,28 +195,6 @@ html {
 .rise.visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* ── Scale reveal ── */
-.scale-reveal {
-  opacity: 0;
-  transform: scale(0.92);
-  transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.scale-reveal.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* ── Vertical line grow ── */
-.vline-grow {
-  transform-origin: top center;
-  transform: scaleY(0);
-  transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.vline-grow.visible {
-  transform: scaleY(1);
 }
 
 /* ── Blur fade ── */
@@ -195,4 +219,15 @@ html {
 }
 .mask-reveal.visible {
   clip-path: inset(0 0 0 0);
+}
+
+/* ── Organic noise texture overlay (subtle) ── */
+.texture-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
 }
