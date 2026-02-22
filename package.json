@@ -6,6 +6,8 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
+    "export": "next export",
+    "deploy": "gh-pages -d out",
     "lint": "next lint"
   },
   "dependencies": {
@@ -66,7 +68,8 @@
     "@types/react-dom": "19.2.3",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "gh-pages": "^5.0.0"
   },
   "pnpm": {
     "overrides": {
