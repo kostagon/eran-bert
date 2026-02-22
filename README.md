@@ -9,10 +9,10 @@ Local test & deploy (using npm):
 ```bash
 npm install
 npm run build
-npm run export
+# `next export` is handled by `next build` when `output: 'export'` is set
 npx gh-pages -d out
 ```
 
-CI: GitHub Actions will run on pushes to `main` and deploy the `out` directory to the `gh-pages` branch.
+CI: GitHub Actions runs on pushes to `main`, builds the site (`npm run build`), and uploads the generated `out` directory to Pages. The workflow sets `NPM_CONFIG_LEGACY_PEER_DEPS=true` to avoid peer-resolution failures where necessary.
 
 Visit: https://kostagon.github.io/eran-bert/
