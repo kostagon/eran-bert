@@ -33,21 +33,7 @@ jobs:
         run: npm ci
 
       - name: Build Next.js
-        run: |
-          npm run build
+        run: npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        run: npm run deploy
